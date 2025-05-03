@@ -1,11 +1,10 @@
-function App() {
-  
+import { Outlet } from "react-router-dom"
+
+export default function App() {
+
   return (
     <>
-      <h1 className="text-center text-6xl">Vite + React</h1>
-    
+      <Outlet />
     </>
   )
 }
-
-export default App
