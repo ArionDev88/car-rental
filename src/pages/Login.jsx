@@ -1,9 +1,15 @@
 import {FaUser, FaLock} from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
 export default function Login() {
     const { register, handleSubmit, formState: { errors } } = useForm();
+    const navigate = useNavigate();
+
+    const login = async (data) => {
+        console.log('Logging in with:', data);
+        navigate('/homepage'); 
+    }
 
     return (
         <div className="flex min-h-screen flex-col md:flex-row">
@@ -23,7 +29,7 @@ export default function Login() {
                         Welcome Back to <span className="text-blue-600">LuxDrive</span>
                     </h2>
 
-                    <form className="space-y-6" onSubmit={handleSubmit((data) => console.log(data))}>
+                    <form className="space-y-6" onSubmit={handleSubmit(login)}>
                         <div>
                             <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
                                 <FaUser className="mr-3 text-xl text-gray-500" />
@@ -56,7 +62,7 @@ export default function Login() {
 
                         <button
                             type="submit"
-                            className="w-full rounded-lg bg-blue-600 px-4 py-4 font-bold text-white transition-colors hover:bg-blue-700"
+                            className="w-full rounded-lg bg-blue-600 px-4 py-4 font-bold text-white transition-colors hover:bg-blue-700 cursor-pointer"
                         >
                             Login
                         </button>
