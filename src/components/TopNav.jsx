@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoNotifications } from 'react-icons/io5';
 import { FaUser, FaHome, FaCar, FaShoppingCart, FaChartBar, FaUsers } from 'react-icons/fa';
+import { useAuthStore } from '../stores/authStore';
 
 const simpleUserItems = [
     { icon: <FaHome />, path: "/homepage" },
@@ -9,14 +10,11 @@ const simpleUserItems = [
     { icon: <FaShoppingCart />, path: "/shopping-cart" },
 ];
 
-const managerItems = [
-    { icon: <FaChartBar />, path: "/statistics" },
-    { icon: <FaUsers />, path: "/manage-users" },
-];
 
 export default function TopNav() {
     const [showDropdown, setShowDropdown] = useState(false);
     const navigate = useNavigate();
+    const userRole = useAuthStore.getState().role;
 
     // TODO: Implement logic to determine user role and select appropriate nav items.
     // For this example, we'll use simpleUserItems.
@@ -33,6 +31,7 @@ export default function TopNav() {
     };
     
     const handleLogout = () => {
+        useAuthStore.getState().clearAuth();
         navigate('/');
         setShowDropdown(false);
     };
@@ -65,7 +64,7 @@ export default function TopNav() {
 
                 {/* Navigation Icons */}
                 <div className="flex items-center space-x-1 sm:space-x-2"> {/* Adjusted space for responsiveness */}
-                    {navItemsToDisplay.map((item) => (
+                    {userRole === 'CLIENT' && navItemsToDisplay.map((item) => (
                         <button
                             key={item.path}
                             onClick={() => handleNavigate(item.path)}

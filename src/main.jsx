@@ -9,6 +9,7 @@ import Signup from './pages/Signup.jsx'
 import HomePage from './pages/HomePage.jsx'
 import VehicleMarketplace from './pages/VehicleMarketplace.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import AllReservations from './pages/AllReservations.jsx'
 
 const router = createBrowserRouter([
   {
@@ -29,11 +30,17 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Dashboard />
+            element: <Dashboard />, 
+            loader: Dashboard.loader
           },
           {
             path: "browse-vehicles",
             element: <VehicleMarketplace />
+          },
+          {
+            path: "all-reservations",
+            element: <AllReservations />,
+            loader: AllReservations.loader
           }
         ]
       },

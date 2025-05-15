@@ -1,8 +1,35 @@
-import {FaUser, FaEnvelope, FaLock} from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { signUp } from '../controllers/authController';
+import { useAuthStore } from '../stores/authStore';
 export default function Signup() {
     const { register, handleSubmit, formState: { errors } } = useForm();
+    const navigate = useNavigate();
+
+    const onSubmit = async (data) => {
+        try {
+            if (data.password !== data.confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            const response = await signUp({
+                firstName: data.firstName,
+                lastName: data.lastName,
+                username: data.username,
+                email: data.email,
+                password: data.password
+            });
+            useAuthStore.setState({
+                token: response.token,
+                role: response.role,
+                userId: response.userId,
+            });
+            navigate('/homepage');
+        } catch (error) {
+            console.error('Error signing up:', error);
+        }
+    }
 
     return (
         <div className="flex min-h-screen flex-col md:flex-row">
@@ -22,22 +49,53 @@ export default function Signup() {
                         Join <span className="text-blue-600">LuxDrive</span>
                     </h2>
 
-                    <form className="space-y-6" onSubmit={handleSubmit((data) => console.log(data))}>
+                    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="flex-1">
+                            <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
+                                <FaUser className="mr-3 text-xl text-gray-500" />
+                                <input
+                                    type="text"
+                                    placeholder="First Name"
+                                    className="flex-1 border-none outline-none"
+                                    {
+                                    ...register('firstName', { required: 'First Name is required' })
+                                    }
+                                />
+                            </label>
+                            {/* {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>} */}
+                        </div>
+                        <div className="flex-1">
+                            <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
+                                <FaUser className="mr-3 text-xl text-gray-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Last Name"
+                                    className="flex-1 border-none outline-none"
+                                    {
+                                    ...register('lastName', { required: 'Last Name is required' })
+                                    }
+                                />
+                            </label>
+                            {/* {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>} */}
+                        </div>
+
+                        {/* Username Input */}
                         <div>
                             <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
                                 <FaUser className="mr-3 text-xl text-gray-500" />
                                 <input
                                     type="text"
-                                    placeholder="Full Name"
+                                    placeholder="Username"
                                     className="flex-1 border-none outline-none"
-                                    required
                                     {
-                                        ...register('name', { required: 'Name is required' })
+                                    ...register('username', { required: 'Username is required' })
                                     }
                                 />
                             </label>
+                            {/* {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>} */}
                         </div>
 
+                        {/* Email Input */}
                         <div>
                             <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
                                 <FaEnvelope className="mr-3 text-xl text-gray-500" />
@@ -45,14 +103,21 @@ export default function Signup() {
                                     type="email"
                                     placeholder="Email"
                                     className="flex-1 border-none outline-none"
-                                    required
                                     {
-                                        ...register('email', { required: 'Email is required' })
+                                    ...register('email', {
+                                        required: 'Email is required',
+                                        pattern: {
+                                            value: /^\S+@\S+$/i,
+                                            message: "Entered value does not match email format"
+                                        }
+                                    })
                                     }
                                 />
                             </label>
+                            {/* {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>} */}
                         </div>
 
+                        {/* Password Input */}
                         <div>
                             <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
                                 <FaLock className="mr-3 text-xl text-gray-500" />
@@ -60,14 +125,15 @@ export default function Signup() {
                                     type="password"
                                     placeholder="Password"
                                     className="flex-1 border-none outline-none"
-                                    required
                                     {
-                                        ...register('password', { required: 'Password is required' })
+                                    ...register('password', { required: 'Password is required' })
                                     }
                                 />
                             </label>
+                            {/* {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>} */}
                         </div>
 
+                        {/* Confirm Password Input */}
                         <div>
                             <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
                                 <FaLock className="mr-3 text-xl text-gray-500" />
@@ -75,17 +141,20 @@ export default function Signup() {
                                     type="password"
                                     placeholder="Confirm Password"
                                     className="flex-1 border-none outline-none"
-                                    required
                                     {
-                                        ...register('confirmPassword', { required: 'Confirm Password is required' })
+                                    ...register('confirmPassword', {
+                                        required: 'Confirm Password is required',
+                                        // validate: value => value === getValues("password") || "The passwords do not match" // If using getValues
+                                    })
                                     }
                                 />
                             </label>
+                            {/* {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>} */}
                         </div>
 
                         <button
                             type="submit"
-                            className="w-full rounded-lg bg-blue-600 px-4 py-4 font-bold text-white transition-colors hover:bg-blue-700"
+                            className="w-full rounded-lg bg-blue-600 px-4 py-4 font-bold text-white transition-colors hover:bg-blue-700 cursor-pointer"
                         >
                             Sign Up
                         </button>

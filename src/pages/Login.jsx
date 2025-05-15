@@ -1,14 +1,33 @@
-import {FaUser, FaLock} from 'react-icons/fa';
+import { FaUser, FaLock } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useAuthStore } from '../stores/authStore';
+import { login } from '../controllers/authController';
 
 export default function Login() {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
 
-    const login = async (data) => {
-        console.log('Logging in with:', data);
-        navigate('/homepage'); 
+    const handleLogin = async (data) => {
+        try {
+            const response = await login({
+                email: data.email,
+                password: data.password
+            });
+            useAuthStore.setState({
+                token: response.token,
+                role: response.role,
+                userId: response.userId,
+            });
+
+            if (response.role === 'MANAGER') {
+                navigate('/homepage/all-reservations');
+            } else {
+                navigate('/homepage');
+            }
+        } catch (error) {
+            console.error('Error logging in:', error);
+        }
     }
 
     return (
@@ -29,7 +48,7 @@ export default function Login() {
                         Welcome Back to <span className="text-blue-600">LuxDrive</span>
                     </h2>
 
-                    <form className="space-y-6" onSubmit={handleSubmit(login)}>
+                    <form className="space-y-6" onSubmit={handleSubmit(handleLogin)}>
                         <div>
                             <label className="flex items-center rounded-lg border-2 border-gray-200 p-3 transition-all duration-300 focus-within:border-blue-600">
                                 <FaUser className="mr-3 text-xl text-gray-500" />
@@ -39,7 +58,7 @@ export default function Login() {
                                     className="flex-1 border-none outline-none"
                                     required
                                     {
-                                        ...register('email', { required: 'Email is required' })
+                                    ...register('email', { required: 'Email is required' })
                                     }
                                 />
                             </label>
@@ -54,7 +73,7 @@ export default function Login() {
                                     className="flex-1 border-none outline-none"
                                     required
                                     {
-                                        ...register('password', { required: 'Password is required' })
+                                    ...register('password', { required: 'Password is required' })
                                     }
                                 />
                             </label>
