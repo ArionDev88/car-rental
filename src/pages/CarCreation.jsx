@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { useBrandsStore } from "../stores/brandsStore";
-import { createBrand, getAllBrands, createModel } from "../controllers/cars";
+import { createBrand, getAllBrands, createModel, getAllModelsByBrandId } from "../controllers/cars";
+import { getBranches } from "../controllers/branches";
 import { featureCategories } from "../utils/features";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { categories } from "../utils/categories";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Modal } from "../components/Modal";
 
 export default function CarCreation() {
+    const queryClient = useQueryClient();
     // form state
     const [brandId, setBrandId] = useState("");
     const [modelId, setModelId] = useState("");
@@ -22,17 +25,9 @@ export default function CarCreation() {
     const [brandName, setBrandName] = useState("");
     const [brandLogo, setBrandLogo] = useState(null);
 
-    // modal toggles
     const [isBrandModalOpen, setBrandModalOpen] = useState(false);
     const [isModelModalOpen, setModelModalOpen] = useState(false);
 
-    // dummy options
-    const brandOptions = [{ id: 1, name: "Toyota" }, { id: 2, name: "Ford" }];
-    const modelOptions = [{ id: 1, name: "Corolla" }, { id: 2, name: "Focus" }];
-    const branchOptions = [{ id: 1, name: "Downtown" }, { id: 2, name: "Airport" }];
-    const categoryOptions = ["Economy", "SUV", "Luxury"];
-
-    // Fetch brands using React Query
     const {
         data: brands,
         isLoading: isBrandsLoading,
@@ -41,6 +36,27 @@ export default function CarCreation() {
     } = useQuery({
         queryKey: ["brands"],
         queryFn: getAllBrands,
+    });
+
+    const {
+        data: models,
+        isLoading: isModelsLoading,
+        isError: isModelsError,
+        error: modelsError,
+    } = useQuery({
+        queryKey: ["models", brandId],
+        queryFn: () => getAllModelsByBrandId(brandId),
+        enabled: Boolean(brandId),
+    });
+
+    const {
+        data: branches,
+        isLoading: isBranchesLoading,
+        isError: isBranchesError,
+        error: branchesError,
+    } = useQuery({
+        queryKey: ["branches"],
+        queryFn: getBranches,
     });
 
     const createBrandMutation = useMutation({
@@ -85,14 +101,13 @@ export default function CarCreation() {
     };
 
     const handleBrandCreation = (e) => {
-        // e.preventDefault();
         if (brandName) {
             createBrandMutation.mutate({ name: brandName, logo: brandLogo });
         }
     };
 
     const handleModelCreation = () => {
-        createModelMutation.mutate({name: modelName, brandId: selectedBrandId});
+        createModelMutation.mutate({ name: modelName, brandId: selectedBrandId });
     }
 
     return (
@@ -140,10 +155,9 @@ export default function CarCreation() {
                             required
                         >
                             <option value="">Select model…</option>
-                            {modelOptions
-                                .filter(m => String(m.brandId) === brandId || !m.brandId)
+                            {models && models.carModelResponseDTOS
                                 .map(m => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                    <option key={m.modelId} value={m.modelId}>{m.carModelName}</option>
                                 ))}
                         </select>
                         <button
@@ -221,7 +235,7 @@ export default function CarCreation() {
                         required
                     >
                         <option value="">Select branch…</option>
-                        {branchOptions.map(b => (
+                        {branches?.content.map(b => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                         ))}
                     </select>
@@ -275,7 +289,7 @@ export default function CarCreation() {
                         required
                     >
                         <option value="">Select category…</option>
-                        {categoryOptions.map(c => (
+                        {categories.map(c => (
                             <option key={c} value={c}>{c}</option>
                         ))}
                     </select>
@@ -399,22 +413,5 @@ export default function CarCreation() {
                 </Modal>
             )}
         </>
-    );
-}
-
-// Generic Modal Wrapper
-function Modal({ children, onClose }) {
-    return (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-1000 backdrop-blur-sm">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                <button
-                    onClick={onClose}
-                    className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-                >
-                    ✕
-                </button>
-                {children}
-            </div>
-        </div>
     );
 }

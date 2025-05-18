@@ -39,6 +39,7 @@ export async function createModel({ name,brandId }) {
     const response = await fetch('http://localhost:8080/api/private/car-model/create-model', {
         method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${useAuthStore.getState().token}`,
         },
         body: JSON.stringify({
@@ -95,6 +96,21 @@ export async function getAllBrands() {
 
     if (!response.ok) {
         throw new Error('Failed to fetch brands');
+    }
+
+    return await response.json();
+}
+
+export async function getAllModelsByBrandId(brandId) {
+    const response = await fetch(`http://localhost:8080/api/public/car-brand/${brandId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch models');
     }
 
     return await response.json();

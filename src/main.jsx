@@ -11,6 +11,7 @@ import VehicleMarketplace from './pages/VehicleMarketplace.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import AllReservations from './pages/AllReservations.jsx'
 import CarCreation from './pages/CarCreation.jsx'
+import Branches from './pages/Branches.jsx'
 
 const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
           {
             path: "create-car",
             element: <CarCreation />,
+          },
+          {
+            path: "branches",
+            element: <Branches />,
           }
         ]
       },
