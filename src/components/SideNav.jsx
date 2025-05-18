@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 const managerItems = [
     { name: "Reservations", icon: <FaList />, path: "/all-reservations" },
     { name: "Manage Users", icon: <FaUsers />, path: "/manage-users" },
+    { name: "Create Vehicle", icon: <FaCar />, path: "create-car" },
 ];
 
 export default function SideNav() {
