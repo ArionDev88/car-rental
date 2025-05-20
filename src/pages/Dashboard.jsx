@@ -1,5 +1,3 @@
-import React from 'react';
-import { useAuthStore } from '../stores/authStore';
 import { getClientDashboard } from '../controllers/clientDashboard';
 import { useLoaderData } from 'react-router-dom';
 
@@ -12,8 +10,7 @@ export async function loader() {
 export default function Dashboard() {
     const info = useLoaderData();
 
-    // derive active reservations if needed
-    const activeCount = info.totalReservationNumber;
+    const activeCount = info.activeReservationNumber;
 
     return (
         <div className="p-8 overflow-auto flex-grow bg-gray-50">
@@ -44,25 +41,39 @@ export default function Dashboard() {
                 <h2 className="text-xl font-bold mb-6">Your Reservations</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {['Upcoming', 'Current', 'Past'].map((category) => (
-                        <div key={category} className="border rounded-lg p-4">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-semibold">{category}</h3>
-                                <button
-                                    className="text-sm text-primary hover:underline"
-                                    onClick={() => console.log(`Navigate to ${category} list`)}
-                                >
-                                    See full list →
-                                </button>
-                            </div>
+                    {['Future', 'Active', 'Past'].map((category) => { // Changed 'Upcoming' to 'Future' and added 'Active'
+                        const reservations = info[`${category.toLowerCase()}Reservations`].content;
+                        const displayCategory = category === 'Future' ? 'Upcoming' : category; // Display "Upcoming" for "Future" data
+                        return (
+                            <div key={category} className="border rounded-lg p-4">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-semibold">{displayCategory}</h3>
+                                    <button
+                                        className="text-sm text-primary hover:underline"
+                                        onClick={() => console.log(`Maps to ${displayCategory} list`)}
+                                    >
+                                        See full list →
+                                    </button>
+                                </div>
 
-                            {/* TODO: replace static user.reservations with dynamic info.{category.toLowerCase()}Reservations.content */}
-                            {/* This example still uses static data or pagination from API */}
-                            <p className="text-gray-500 text-sm text-center py-4">
-                                No {category.toLowerCase()} reservations
-                            </p>
-                        </div>
-                    ))}
+                                {reservations.length > 0 ? (
+                                    <ul>
+                                        {reservations.map((reservation) => (
+                                            <li key={reservation.id} className="mb-2 text-sm">
+                                                <p className="font-medium">Car: {reservation.carLicense}</p>
+                                                <p className="text-gray-600">From: {reservation.startDate} to {reservation.endDate}</p>
+                                                <p className="text-gray-600">Amount: ${reservation.totalAmount.toFixed(2)}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500 text-sm text-center py-4">
+                                        No {displayCategory.toLowerCase()} reservations
+                                    </p>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

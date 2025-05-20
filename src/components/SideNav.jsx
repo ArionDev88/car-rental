@@ -1,8 +1,8 @@
-import { FaHome, FaCar, FaLocationArrow, FaChartBar, FaUsers, FaList } from "react-icons/fa";
+import { FaCar, FaLocationArrow, FaUsers, FaList } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const managerItems = [
-    { name: "Reservations", icon: <FaList />, path: "/all-reservations" },
+    { name: "Reservations", icon: <FaList />, path: "all-reservations" },
     { name: "Manage Users", icon: <FaUsers />, path: "/manage-users" },
     { name: "Create Vehicle", icon: <FaCar />, path: "create-car" },
     { name: "Branches", icon: <FaLocationArrow />, path: "branches" },

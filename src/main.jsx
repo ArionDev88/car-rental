@@ -42,7 +42,7 @@ const router = createBrowserRouter([
           {
             path: "all-reservations",
             element: <AllReservations />,
-            loader: AllReservations.loader
+            // loader: AllReservations.loader
           },
           {
             path: "create-car",

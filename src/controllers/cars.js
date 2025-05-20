@@ -210,6 +210,5 @@ export async function getAllCars(filters = {}) {
     if (!response.ok) {
         throw new Error(`Failed to fetch cars (status ${response.status})`);
     }
-    // If the server returns non-JSON, this will throw the same “Unexpected token '<'” error.
     return await response.json();
 }
