@@ -5,12 +5,14 @@ import { getAllCars, getAllAvailableBrands, getAllModelsByBrandIds } from '../co
 import { getBranches } from '../controllers/branches';
 import { categories } from '../utils/categories';
 import { bookCar } from '../controllers/reservations';
+import { loadStripe } from '@stripe/stripe-js';
 import MoreFiltersModal from '../components/MoreFiltersModal';
 
 export default function VehicleMarketplace() {
     const queryClient = useQueryClient();
     const [carsResponse, setCarsResponse] = useState({ content: [] });
-    const [showMoreFiltersModal, setShowMoreFiltersModal] = useState(false); // New state for modal
+    const [showMoreFiltersModal, setShowMoreFiltersModal] = useState(false);
+    const stripePromise = loadStripe('pk_test_51RBl5zP0LpVZ7AU0cjuGtbpqYHHHsM3cfdICkKNaJZBMEaHzAdSY6douHFysAANYIgLmeQ7HOTLxkMH1hGwbUBeu00Vx2ev7XC');
 
 
     const {
@@ -164,6 +166,24 @@ export default function VehicleMarketplace() {
             // Handle error (e.g., show an error message)
         }
     }
+
+    const handlePayNowBooking = async (carId) => {
+        try {
+            // wait for your Stripe.js promise if you still need it elsewhere
+            // await stripePromise;
+            const response = await bookCar({
+                carId,
+                startDate: availFromValue,
+                endDate: availToValue,
+                paymentOption: 'PAY_NOW',
+            });
+
+            window.location.href = response.url
+        } catch (error) {
+            console.error('Error booking car:', error);
+        }
+    };
+
 
 
     return (
@@ -493,11 +513,10 @@ export default function VehicleMarketplace() {
                                 <div className="flex justify-end gap-2 mt-4">
                                     <button
                                         type="button"
-                                        className={`px-4 py-2 rounded ${
-                                            isBookingDisabled
-                                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                                : 'bg-blue-600 text-white hover:bg-blue-700'
-                                        }`}
+                                        className={`px-4 py-2 rounded ${isBookingDisabled
+                                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                                            }`}
                                         disabled={isBookingDisabled}
                                         onClick={() => {
                                             if (!isBookingDisabled) {
@@ -511,14 +530,14 @@ export default function VehicleMarketplace() {
                                     </button>
                                     <button
                                         type="button"
-                                        className={`px-4 py-2 rounded ${
-                                            isBookingDisabled
-                                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                                : 'bg-green-600 text-white hover:bg-green-700'
-                                        }`}
+                                        className={`px-4 py-2 rounded ${isBookingDisabled
+                                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                            : 'bg-green-600 text-white hover:bg-green-700'
+                                            }`}
                                         disabled={isBookingDisabled}
                                         onClick={() => {
                                             if (!isBookingDisabled) {
+                                                handlePayNowBooking(car.id);
                                                 // Handle "Pay Now" logic here
                                                 console.log(`Pay Now for car ${car.id} from ${availFromValue} to ${availToValue}`);
                                             }

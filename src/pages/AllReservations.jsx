@@ -61,7 +61,7 @@ export default function AllReservations() {
     }
 
     const showActionsColumn = fetchReservations.data?.content.some(
-        (res) => res.status === 'PENDING' || res.status === 'PAID' || res.status === 'CONFIRMED'
+        (res) => res.status === 'PENDING' || res.status === 'PAID' || res.status === 'CONFIRMED' || res.status === 'NO_SHOW'
     );
 
     return (

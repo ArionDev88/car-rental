@@ -41,9 +41,11 @@ export default function Dashboard() {
                 <h2 className="text-xl font-bold mb-6">Your Reservations</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {['Future', 'Active', 'Past'].map((category) => { // Changed 'Upcoming' to 'Future' and added 'Active'
+                    {['Future', 'Active', 'Past'].map((category) => {
                         const reservations = info[`${category.toLowerCase()}Reservations`].content;
                         const displayCategory = category === 'Future' ? 'Upcoming' : category; // Display "Upcoming" for "Future" data
+
+                        const firstReservation = reservations.length > 0 ? reservations.slice(-1)[0] : null;
                         return (
                             <div key={category} className="border rounded-lg p-4">
                                 <div className="flex justify-between items-center mb-4">
@@ -56,16 +58,16 @@ export default function Dashboard() {
                                     </button>
                                 </div>
 
-                                {reservations.length > 0 ? (
-                                    <ul>
-                                        {reservations.map((reservation) => (
-                                            <li key={reservation.id} className="mb-2 text-sm">
-                                                <p className="font-medium">Car: {reservation.carLicense}</p>
-                                                <p className="text-gray-600">From: {reservation.startDate} to {reservation.endDate}</p>
-                                                <p className="text-gray-600">Amount: ${reservation.totalAmount.toFixed(2)}</p>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                {firstReservation ? (
+                                    <div className="text-sm">
+                                        <p className="font-medium">Car: {firstReservation.carLicense}</p>
+                                        <p className="text-gray-600">
+                                            From: {firstReservation.startDate} to {firstReservation.endDate}
+                                        </p>
+                                        <p className="text-gray-600">
+                                            Amount: ${firstReservation.totalAmount.toFixed(2)}
+                                        </p>
+                                    </div>
                                 ) : (
                                     <p className="text-gray-500 text-sm text-center py-4">
                                         No {displayCategory.toLowerCase()} reservations
@@ -75,6 +77,7 @@ export default function Dashboard() {
                         );
                     })}
                 </div>
+
             </div>
 
             {/* Quick Actions */}
