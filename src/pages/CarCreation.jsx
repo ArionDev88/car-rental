@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { createBrand, getAllBrands, createModel, getAllModelsByBrandId } from "../controllers/cars";
+import { useForm } from "react-hook-form";
+import { createBrand, getAllBrands, createModel, getAllModelsByBrandId, createCar } from "../controllers/cars";
 import { getBranches } from "../controllers/branches";
 import { featureCategories } from "../utils/features";
 import { categories } from "../utils/categories";
@@ -8,17 +9,9 @@ import { Modal } from "../components/Modal";
 
 export default function CarCreation() {
     const queryClient = useQueryClient();
+    const { register, handleSubmit, reset, setValue, watch } = useForm();
     // form state
-    const [brandId, setBrandId] = useState("");
-    const [modelId, setModelId] = useState("");
-    const [licensePlate, setLicensePlate] = useState("");
-    const [year, setYear] = useState("");
-    const [mileage, setMileage] = useState("");
-    const [pricePerDay, setPricePerDay] = useState("");
-    const [branchId, setBranchId] = useState("");
     const [features, setFeatures] = useState([]);
-    const [category, setCategory] = useState("");
-    const [images, setImages] = useState([]);
     const [selectedBrandId, setSelectedBrandId] = useState("");
     const [modelName, setModelName] = useState("");
 
@@ -27,6 +20,8 @@ export default function CarCreation() {
 
     const [isBrandModalOpen, setBrandModalOpen] = useState(false);
     const [isModelModalOpen, setModelModalOpen] = useState(false);
+
+    const brandId = watch("brandId");
 
     const {
         data: brands,
@@ -91,13 +86,18 @@ export default function CarCreation() {
         );
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // submit logic here...
-        console.log({
-            brandId, modelId, licensePlate, year, mileage,
-            pricePerDay, branchId, features, category, images
-        });
+    const handleCarSubmit = async (data) => {
+        try {
+            await createCar({
+                ...data,
+                features
+            });
+            reset();
+            setFeatures([]);
+        } catch (error) {
+            console.error("Error creating car:", error);
+            // Optionally, display an error message to the user
+        }
     };
 
     const handleBrandCreation = (e) => {
@@ -114,7 +114,7 @@ export default function CarCreation() {
         <>
             {/* Car Creation Form */}
             <form
-                onSubmit={handleSubmit}
+                onSubmit={handleSubmit(handleCarSubmit)}
                 className="w-full mx-auto p-6 bg-white rounded-lg shadow-md space-y-4"
             >
                 <h2 className="text-2xl font-semibold">Create New Car</h2>
@@ -124,10 +124,8 @@ export default function CarCreation() {
                     <label className="block font-medium">Brand</label>
                     <div className="flex space-x-2">
                         <select
-                            value={brandId}
-                            onChange={e => setBrandId(e.target.value)}
+                            {...register('brandId', { required: 'Brand is required' })}
                             className="flex-1 border rounded px-3 py-2"
-                            required
                         >
                             <option value="">Select brand…</option>
                             {brands && brands.map(b => (
@@ -149,10 +147,8 @@ export default function CarCreation() {
                     <label className="block font-medium">Model</label>
                     <div className="flex space-x-2">
                         <select
-                            value={modelId}
-                            onChange={e => setModelId(e.target.value)}
+                            {...register('modelId', { required: 'Model is required' })}
                             className="flex-1 border rounded px-3 py-2"
-                            required
                         >
                             <option value="">Select model…</option>
                             {models && models.carModelResponseDTOS
@@ -175,13 +171,13 @@ export default function CarCreation() {
                     <label className="block font-medium">License Plate</label>
                     <input
                         type="text"
-                        value={licensePlate}
-                        onChange={e => setLicensePlate(e.target.value)}
+                        {...register('licensePlate', {
+                            required: 'License plate is required',
+                            minLength: { value: 5, message: 'License plate must be at least 5 characters' },
+                            maxLength: { value: 7, message: 'License plate cannot exceed 7 characters' },
+                        })}
                         className="w-full border rounded px-3 py-2"
                         placeholder="ABC1234"
-                        minLength={5}
-                        maxLength={7}
-                        required
                     />
                 </div>
 
@@ -190,23 +186,18 @@ export default function CarCreation() {
                         <label className="block font-medium">Year</label>
                         <input
                             type="number"
-                            value={year}
-                            onChange={e => setYear(e.target.value)}
+                            {...register('year', { required: 'Year is required', valueAsNumber: true })}
                             className="w-full border rounded px-3 py-2"
                             placeholder="2022"
-                            required
                         />
                     </div>
                     <div>
                         <label className="block font-medium">Mileage</label>
                         <input
                             type="number"
-                            value={mileage}
-                            onChange={e => setMileage(e.target.value)}
+                            {...register('mileage', { required: 'Mileage is required', valueAsNumber: true, min: 0 })}
                             className="w-full border rounded px-3 py-2"
                             placeholder="15000"
-                            min={0}
-                            required
                         />
                     </div>
                 </div>
@@ -215,24 +206,23 @@ export default function CarCreation() {
                     <label className="block font-medium">Price per Day (€)</label>
                     <input
                         type="number"
-                        value={pricePerDay}
-                        onChange={e => setPricePerDay(e.target.value)}
+                        {...register('pricePerDay', {
+                            required: 'Price per day is required',
+                            valueAsNumber: true,
+                            min: 1,
+                            max: 500,
+                            step: '1',
+                        })}
                         className="w-full border rounded px-3 py-2"
                         placeholder="100"
-                        min={1}
-                        max={500}
-                        step="0.01"
-                        required
                     />
                 </div>
 
                 <div>
                     <label className="block font-medium">Branch</label>
                     <select
-                        value={branchId}
-                        onChange={e => setBranchId(e.target.value)}
+                        {...register('branchId', { required: 'Branch is required' })}
                         className="w-full border rounded px-3 py-2"
-                        required
                     >
                         <option value="">Select branch…</option>
                         {branches?.content.map(b => (
@@ -283,10 +273,8 @@ export default function CarCreation() {
                 <div>
                     <label className="block font-medium">Category</label>
                     <select
-                        value={category}
-                        onChange={e => setCategory(e.target.value)}
+                        {...register('category', { required: 'Category is required' })}
                         className="w-full border rounded px-3 py-2"
-                        required
                     >
                         <option value="">Select category…</option>
                         {categories.map(c => (
@@ -299,10 +287,9 @@ export default function CarCreation() {
                     <label className="block font-medium">Images</label>
                     <input
                         type="file"
-                        onChange={e => setImages([...e.target.files])}
+                        {...register('images', { required: 'At least one image is required' })}
                         className="w-full"
                         multiple
-                        accept="image/*"
                     />
                 </div>
 

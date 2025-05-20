@@ -7,7 +7,7 @@ import { useAuthStore } from '../stores/authStore';
 const simpleUserItems = [
     { icon: <FaHome />, path: "/homepage" },
     { icon: <FaCar />, path: "browse-vehicles" },
-    { icon: <FaShoppingCart />, path: "/shopping-cart" },
+    // { icon: <FaShoppingCart />, path: "/shopping-cart" },
 ];
 
 
