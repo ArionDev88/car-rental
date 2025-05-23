@@ -17,13 +17,14 @@ export default function MyReservations() {
     const cancelMutation = useMutation({
         mutationFn: (id) => cancelReservation(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-reservations", pageNumber] });
+            queryClient.invalidateQueries({
+                queryKey: ["my-reservations", pageNumber],
+            });
         },
         onError: (error) => {
             console.error("Error cancelling reservation:", error);
-        }
-    }
-    );
+        },
+    });
 
     // ---------------------------------------------------
     // 2) Mutation: edit reservation (dates and/or payment)
@@ -31,15 +32,21 @@ export default function MyReservations() {
     const editMutation = useMutation({
         mutationFn: ({ id, carId, startDate, endDate, paymentOption }) =>
             editReservation(id, { carId, startDate, endDate, paymentOption }),
-
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-reservations", pageNumber] });
-            setEditingId(null); // Exit edit mode after successful edit
+        onSuccess: (data) => {
+            if (data?.url) {
+                window.location.href = data.url;
+            } else {
+                queryClient.invalidateQueries({
+                    queryKey: ["my-reservations", pageNumber],
+                });
+                setEditingId(null);
+            }
         },
         onError: (error) => {
             console.error("Error editing reservation:", error);
-        }
+        },
     });
+
     // ---------------------------------------------------
     // 3) Query: fetch paginated reservations
     // ---------------------------------------------------
@@ -97,7 +104,7 @@ export default function MyReservations() {
 
                     const isEditableOrPayable =
                         status === "PENDING" || status === "CONFIRMED";
-                    const isCancancellable = isEditableOrPayable;
+                    const isCancellable = isEditableOrPayable;
                     const currentlyEditing = editingId === id;
 
                     return (
@@ -113,12 +120,16 @@ export default function MyReservations() {
 
                                 {/* Car License */}
                                 <span className="flex-none px-2 border-l border-gray-300">
-                                    <span className="text-gray-600">Car License: {carLicense}</span>
+                                    <span className="text-gray-600">
+                                        Car License: {carLicense}
+                                    </span>
                                 </span>
 
                                 {/* Client Username */}
                                 <span className="flex-none px-2 border-l border-gray-300">
-                                    <span className="text-gray-600">Client: {clientUsername}</span>
+                                    <span className="text-gray-600">
+                                        Client: {clientUsername}
+                                    </span>
                                 </span>
 
                                 {/* Status */}
@@ -141,7 +152,9 @@ export default function MyReservations() {
 
                                 {/* Created At */}
                                 <span className="flex-none px-2 border-l border-gray-300">
-                                    <span className="text-gray-500">Created at: {createdAt}</span>
+                                    <span className="text-gray-500">
+                                        Created at: {createdAt}
+                                    </span>
                                 </span>
 
                                 {/* Reservation Time */}
@@ -152,7 +165,10 @@ export default function MyReservations() {
                                                 type="date"
                                                 value={newDates.start}
                                                 onChange={(e) =>
-                                                    setNewDates((prev) => ({ ...prev, start: e.target.value }))
+                                                    setNewDates((prev) => ({
+                                                        ...prev,
+                                                        start: e.target.value,
+                                                    }))
                                                 }
                                                 className="border border-gray-300 rounded-md px-2 py-1 mr-1 text-gray-700"
                                             />
@@ -161,7 +177,10 @@ export default function MyReservations() {
                                                 type="date"
                                                 value={newDates.end}
                                                 onChange={(e) =>
-                                                    setNewDates((prev) => ({ ...prev, end: e.target.value }))
+                                                    setNewDates((prev) => ({
+                                                        ...prev,
+                                                        end: e.target.value,
+                                                    }))
                                                 }
                                                 min={newDates.start}
                                                 className="border border-gray-300 rounded-md px-2 py-1 ml-1 text-gray-700"
@@ -192,19 +211,21 @@ export default function MyReservations() {
 
                             {/* Buttons go in left-bottom corner */}
                             <div className="mt-3 flex items-center justify-start space-x-2">
-                                {isCancancellable && !currentlyEditing && (
+                                {/* Cancel button (only when not editing) */}
+                                {isCancellable && !currentlyEditing && (
                                     <button
                                         onClick={() => cancelMutation.mutate(id)}
                                         disabled={cancelMutation.isLoading}
                                         className={`px-3 py-1 rounded-md text-white font-medium ${cancelMutation.isLoading
-                                            ? "bg-gray-400 cursor-not-allowed"
-                                            : "bg-red-600 hover:bg-red-700"
+                                                ? "bg-gray-400 cursor-not-allowed"
+                                                : "bg-red-600 hover:bg-red-700"
                                             }`}
                                     >
                                         {cancelMutation.isLoading ? "Cancelling…" : "Cancel"}
                                     </button>
                                 )}
 
+                                {/* Edit Dates button (only when not editing) */}
                                 {isEditableOrPayable && !currentlyEditing && (
                                     <button
                                         onClick={() => {
@@ -218,6 +239,7 @@ export default function MyReservations() {
                                     </button>
                                 )}
 
+                                {/* “Pay Now” button immediately calls API with existing dates */}
                                 {isEditableOrPayable && !currentlyEditing && (
                                     <button
                                         onClick={() =>
@@ -231,14 +253,15 @@ export default function MyReservations() {
                                         }
                                         disabled={editMutation.isLoading}
                                         className={`px-3 py-1 rounded-md text-white font-medium ${editMutation.isLoading
-                                            ? "bg-gray-400 cursor-not-allowed"
-                                            : "bg-green-600 hover:bg-green-700"
+                                                ? "bg-gray-400 cursor-not-allowed"
+                                                : "bg-green-600 hover:bg-green-700"
                                             }`}
                                     >
                                         {editMutation.isLoading ? "Processing…" : "Pay Now"}
                                     </button>
                                 )}
 
+                                {/* Save/Cancel when in editing mode */}
                                 {currentlyEditing && (
                                     <>
                                         <button
@@ -253,8 +276,8 @@ export default function MyReservations() {
                                             }
                                             disabled={editMutation.isLoading}
                                             className={`px-3 py-1 rounded-md text-white font-medium ${editMutation.isLoading
-                                                ? "bg-gray-400 cursor-not-allowed"
-                                                : "bg-blue-600 hover:bg-blue-700"
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-blue-600 hover:bg-blue-700"
                                                 }`}
                                         >
                                             {editMutation.isLoading ? "Saving…" : "Save"}
@@ -270,7 +293,6 @@ export default function MyReservations() {
                                 )}
                             </div>
                         </div>
-
                     );
                 })}
             </div>
@@ -283,12 +305,12 @@ export default function MyReservations() {
                     onClick={() => setPageNumber((old) => Math.max(old - 1, 0))}
                     disabled={number === 0 || isFetching}
                     className={`
-          px-3 py-1 rounded-md font-medium
-          ${number === 0 || isFetching
+            px-3 py-1 rounded-md font-medium
+            ${number === 0 || isFetching
                             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                             : "bg-blue-600 text-white hover:bg-blue-700"
                         }
-        `}
+          `}
                 >
                     Previous
                 </button>
@@ -305,12 +327,12 @@ export default function MyReservations() {
                     }
                     disabled={number + 1 >= totalPages || isFetching}
                     className={`
-          px-3 py-1 rounded-md font-medium
-          ${number + 1 >= totalPages || isFetching
+            px-3 py-1 rounded-md font-medium
+            ${number + 1 >= totalPages || isFetching
                             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                             : "bg-blue-600 text-white hover:bg-blue-700"
                         }
-        `}
+          `}
                 >
                     Next
                 </button>
@@ -321,5 +343,4 @@ export default function MyReservations() {
             )}
         </div>
     );
-
 }
