@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { getReservations, updateReservationStatus } from "../controllers/reservations";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 export default function AllReservations() {
@@ -14,8 +14,9 @@ export default function AllReservations() {
         },
     });
 
-    const fetchReservations = useMutation({
-        mutationFn: (filters) => getReservations(filters),
+    const fetchReservations = useQuery({
+        queryKey: ["reservations", currentFilters],
+        queryFn: () => getReservations(currentFilters),
         onError: (error) => {
             console.error("Error fetching reservations:", error);
         },
@@ -25,7 +26,7 @@ export default function AllReservations() {
         mutationFn: ({ reservationId, status }) => updateReservationStatus(reservationId, status),
         onSuccess: () => {
             queryClient.invalidateQueries(["reservations"]); // Invalidate and refetch reservations after update
-            fetchReservations.mutate(currentFilters); // Re-fetch with current filters
+            // fetchReservations.mutate(currentFilters); // Re-fetch with current filters
         },
         onError: (error) => {
             console.error("Error updating reservation status:", error);
@@ -38,8 +39,16 @@ export default function AllReservations() {
             to: data.to,
             status: data.status,
         };
-        fetchReservations.mutate(filters);
+        // fetchReservations.mutate(filters);
         setCurrentFilters(filters); // Store current filters for re-fetching
+    };
+
+    const handleMakeActive = (reservationId) => {
+        updateStatusMutation.mutate({ reservationId, status: "ACTIVE" });
+    };
+
+    const handleComplete = (reservationId) => {
+        updateStatusMutation.mutate({ reservationId, status: "COMPLETED" });
     };
 
     const handleConfirm = (reservationId) => {
@@ -54,11 +63,11 @@ export default function AllReservations() {
         updateStatusMutation.mutate({ reservationId, status: "NO_SHOW" });
     };
 
-    const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
-    if (!hasFetchedOnce) {
-        fetchReservations.mutate({});
-        setHasFetchedOnce(true);
-    }
+    // const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+    // if (!hasFetchedOnce) {
+    //     fetchReservations.mutate({});
+    //     setHasFetchedOnce(true);
+    // }
 
     const showActionsColumn = fetchReservations.data?.content.some(
         (res) => res.status === 'PENDING' || res.status === 'PAID' || res.status === 'CONFIRMED' || res.status === 'NO_SHOW'
@@ -215,19 +224,41 @@ export default function AllReservations() {
                                                     </>
                                                 )}
                                                 {reservation.status === 'CONFIRMED' && (
-                                                    <button
-                                                        onClick={() => handleCancel(reservation.id)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        Cancel
-                                                    </button>
+                                                    <div className="flex gap-2.5">
+                                                        <button
+                                                            onClick={() => handleMakeActive(reservation.id)}
+                                                            className="text-green-600 hover:text-green-900 cursor-pointer">
+                                                            Make Active
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleCancel(reservation.id)}
+                                                            className="text-red-600 hover:text-red-900 cursor-pointer"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
                                                 )}
                                                 {reservation.status === 'PAID' && (
+                                                    <div className="flex gap-2.5">
+                                                        <button
+                                                            onClick={() => handleMakeActive(reservation.id)}
+                                                            className="text-green-600 hover:text-green-900 cursor-pointer">
+                                                            Make Active
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleNoShow(reservation.id)}
+                                                            className="text-orange-600 hover:text-orange-900 cursor-pointer"
+                                                        >
+                                                            No Show
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {reservation.status === 'ACTIVE' && (
                                                     <button
-                                                        onClick={() => handleNoShow(reservation.id)}
-                                                        className="text-orange-600 hover:text-orange-900"
+                                                        onClick={() => handleComplete(reservation.id)}
+                                                        className="text-blue-600 hover:text-blue-900 cursor-pointer"
                                                     >
-                                                        No Show
+                                                        Complete
                                                     </button>
                                                 )}
                                             </td>

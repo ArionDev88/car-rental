@@ -12,6 +12,11 @@ import Dashboard from './pages/Dashboard.jsx'
 import AllReservations from './pages/AllReservations.jsx'
 import CarCreation from './pages/CarCreation.jsx'
 import Branches from './pages/Branches.jsx'
+import MyReservations from './pages/MyReservations.jsx'
+import MyProfile from './pages/MyProfile.jsx'
+import PastReservations from './pages/PastReservations.jsx'
+import FutureReservations from './pages/FutureReservations.jsx'
+import ActiveReservation from './pages/ActiveReservation.jsx'
 
 const router = createBrowserRouter([
   {
@@ -51,6 +56,26 @@ const router = createBrowserRouter([
           {
             path: "branches",
             element: <Branches />,
+          },
+          {
+            path: "my-reservations",
+            element: <MyReservations />,
+          },
+          {
+            path: "my-profile",
+            element: <MyProfile />,
+          },
+          {
+            path: "past-reservations",
+            element: <PastReservations />,
+          },
+          {
+            path: "future-reservations",
+            element: <FutureReservations />,
+          },
+          {
+            path: "active-reservations",
+            element: <ActiveReservation />
           }
         ]
       },

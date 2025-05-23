@@ -1,5 +1,5 @@
 import { getClientDashboard } from '../controllers/clientDashboard';
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useNavigate } from 'react-router-dom';
 
 // loader to fetch dashboard info
 export async function loader() {
@@ -9,6 +9,7 @@ export async function loader() {
 
 export default function Dashboard() {
     const info = useLoaderData();
+    const navigate = useNavigate();
 
     const activeCount = info.activeReservationNumber;
 
@@ -51,8 +52,22 @@ export default function Dashboard() {
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="font-semibold">{displayCategory}</h3>
                                     <button
-                                        className="text-sm text-primary hover:underline"
-                                        onClick={() => console.log(`Maps to ${displayCategory} list`)}
+                                        className="text-sm text-primary hover:underline cursor-pointer"
+                                        onClick={() => {
+                                            switch (category) {
+                                                case 'Future':
+                                                    navigate('/homepage/future-reservations');
+                                                    break;
+                                                case 'Active':
+                                                    navigate('/homepage/active-reservations');
+                                                    break;
+                                                case 'Past':
+                                                    navigate('/homepage/past-reservations');
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        }}
                                     >
                                         See full list →
                                     </button>
@@ -85,13 +100,19 @@ export default function Dashboard() {
                 <div className="bg-white p-6 rounded-lg shadow-sm">
                     <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
                     <div className="space-y-3">
-                        <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg">
+                        <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg"
+                            onClick={() => navigate('/homepage/browse-vehicles')}
+                        >
                             🚗 Browse Available Vehicles
                         </button>
-                        <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg">
+                        <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                            onClick={() => navigate('/homepage/my-reservations')}
+                        >
                             📝 View Rental History
                         </button>
-                        <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg">
+                        <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg"
+                            onClick={() => navigate('/homepage/my-profile')}
+                        >
                             ⚙️ Account Settings
                         </button>
                     </div>

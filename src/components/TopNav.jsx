@@ -37,7 +37,7 @@ export default function TopNav() {
     };
 
     const goToProfile = () => {
-        navigate('/profile');
+        navigate('my-profile');
         setShowDropdown(false);
     };
 
