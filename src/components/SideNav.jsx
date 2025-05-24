@@ -1,4 +1,4 @@
-import { FaCar, FaLocationArrow, FaUsers, FaList } from "react-icons/fa";
+import { FaCar, FaLocationArrow, FaUsers, FaList, FaMoneyBill } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const managerItems = [
@@ -6,6 +6,8 @@ const managerItems = [
     { name: "Manage Users", icon: <FaUsers />, path: "/manage-users" },
     { name: "Create Vehicle", icon: <FaCar />, path: "create-car" },
     { name: "Branches", icon: <FaLocationArrow />, path: "branches" },
+    { name: "Revenues", icon: <FaList />, path: "revenues" },
+    { name: "Expenses", icon: <FaMoneyBill />, path: "expenses" }
 ];
 
 export default function SideNav() {
@@ -16,13 +18,13 @@ export default function SideNav() {
     };
 
     return (
-        <div className="bg-[#000080] text-white w-64 h-full left-0 p-4">
+        <div className="bg-[#000080] text-white w-64 h-full left-0 p-4 min-h-screen">
 
             <ul className="mt-6 space-y-1">
                 {managerItems.map((item, index) => (
                     <li
                         key={index}
-                        className="flex items-center gap-2 p-2 hover:bg-blue-700 rounded"
+                        className="flex items-center gap-2 p-2 hover:bg-blue-700 rounded cursor-pointer"
                         onClick={() => handleNavigation(item.path)}
                     >
                         {item.icon}

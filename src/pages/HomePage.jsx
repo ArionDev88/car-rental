@@ -10,7 +10,7 @@ export default function HomePage() {
         <div className="flex flex-col h-screen w-full">
             <TopNav />
             
-            <main className={`flex py-1 `}>
+            <main className={`flex `}>
                 {role === 'MANAGER' && <SideNav />}
                 {/* This is where child routes will be rendered */}
                 <Outlet />
