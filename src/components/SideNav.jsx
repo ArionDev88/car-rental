@@ -1,4 +1,4 @@
-import { FaCar, FaLocationArrow, FaUsers, FaList, FaMoneyBill } from "react-icons/fa";
+import { FaCar, FaLocationArrow, FaUsers, FaList, FaMoneyBill,FaGift } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const managerItems = [
@@ -8,7 +8,8 @@ const managerItems = [
     { name: "Create Vehicle", icon: <FaCar />, path: "create-car" },
     { name: "Branches", icon: <FaLocationArrow />, path: "branches" },
     { name: "Revenues", icon: <FaList />, path: "revenues" },
-    { name: "Expenses", icon: <FaMoneyBill />, path: "expenses" }
+    { name: "Expenses", icon: <FaMoneyBill />, path: "expenses" },
+    { name: "Promotions", icon: <FaGift />, path: "promotions" }
 ];
 
 export default function SideNav() {

@@ -295,7 +295,7 @@ export default function CarCreation() {
 
                 <button
                     type="submit"
-                    className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    className="w-full py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
                 >
                     Save Car
                 </button>

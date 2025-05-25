@@ -21,6 +21,7 @@ import Revenues from './pages/Revenues.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Clients from './pages/Clients.jsx'
 import Managers from './pages/Managers.jsx'
+import Promotions from './pages/Promotions.jsx'
 
 const router = createBrowserRouter([
   {
@@ -96,6 +97,10 @@ const router = createBrowserRouter([
           {
             path: 'admins',
             element: <Managers />,
+          },
+          {
+            path: 'promotions',
+            element: <Promotions />,
           }
         ]
       },
