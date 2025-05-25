@@ -1,5 +1,7 @@
 import { getClientDashboard } from '../controllers/clientDashboard';
 import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getPromotions } from '../controllers/promotions';
 
 // loader to fetch dashboard info
 export async function loader() {
@@ -12,6 +14,16 @@ export default function Dashboard() {
     const navigate = useNavigate();
 
     const activeCount = info.activeReservationNumber;
+
+    const { data: promotions } = useQuery({
+        queryKey: ['promotions'],
+        queryFn: getPromotions,
+    });
+
+    // Extract cars from the first promotion, limit to two
+    const recommendedCars = promotions && promotions.length > 0
+        ? promotions[0].cars.slice(0, 2)
+        : [];
 
     return (
         <div className="p-8 overflow-auto flex-grow bg-gray-50">
@@ -122,20 +134,26 @@ export default function Dashboard() {
                 <div className="bg-white p-6 rounded-lg shadow-sm">
                     <h2 className="text-xl font-bold mb-4">Recommended for You</h2>
                     <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-3 border rounded-lg">
-                            <img
-                                src="https://images.unsplash.com/photo-1553440569-bcc63803a83d"
-                                className="w-20 h-20 object-cover rounded"
-                                alt="Car"
-                            />
-                            <div>
-                                <h3 className="font-semibold">Toyota RAV4</h3>
-                                <p className="text-gray-600">$65/day • SUV</p>
-                                <button className="text-blue-600 text-sm mt-1">
-                                    Quick Add to Cart
-                                </button>
-                            </div>
-                        </div>
+                        {recommendedCars.length > 0 ? (
+                            recommendedCars.map((car) => (
+                                <div key={car.id} className="flex items-center gap-4 p-3 border rounded-lg">
+                                    <img
+                                        src={car.imageUrls[0]}
+                                        className="w-20 h-20 object-cover rounded"
+                                        alt={`${car.brand.brandName} ${car.model.carModelName}`}
+                                    />
+                                    <div>
+                                        <h3 className="font-semibold">{car.brand.brandName} {car.model.carModelName}</h3>
+                                        <p className="text-gray-600">${car.pricePerDay.toFixed(2)}/day • {car.category}</p>
+                                        <button className="text-blue-600 text-sm mt-1" onClick={() => navigate(`/homepage/browse-vehicles/${car.id}`)}>
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-sm text-center py-4">No recommended vehicles available.</p>
+                        )}
                     </div>
                 </div>
             </div>

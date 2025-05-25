@@ -68,8 +68,14 @@ export async function bookCar({ carId, startDate, endDate, paymentOption }) {
     return await response.json();
 }
 
-export async function getMyReservations() {
-    const response = await fetch('http://localhost:8080/api/protected/reservations', {
+export async function getMyReservations(filters = {}) {
+    const params = new URLSearchParams();
+
+    if (filters.page) {
+        params.append('page', filters.page);
+    }
+    const url = `http://localhost:8080/api/protected/reservations?${params.toString()}`;
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${useAuthStore.getState().token}`,
