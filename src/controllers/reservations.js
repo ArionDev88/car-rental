@@ -11,6 +11,9 @@ export async function getReservations(filters = {}) {
     if (filters.status) {
         params.append('status', filters.status);
     }
+    if (filters.page) {
+        params.append('page', filters.page);
+    }
     const url = `http://localhost:8080/api/private/reservations?${params.toString()}`;
     const response = await fetch(url, {
         method: 'GET',
@@ -154,4 +157,20 @@ export async function getCurrentReservation() {
         throw new Error('Failed to fetch current reservations');
     }
     return await response.json();
+}
+
+export async function downloadReservationsReport() {
+    const url = `http://localhost:8080/api/private/reservations/report`;
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${useAuthStore.getState().token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to download reservations report');
+    }
+
+    return await response.blob();
 }

@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { getReservations, updateReservationStatus } from "../controllers/reservations";
+import { getReservations, updateReservationStatus, downloadReservationsReport } from "../controllers/reservations";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 export default function AllReservations() {
     const queryClient = useQueryClient();
-    const [currentFilters, setCurrentFilters] = useState({});
     const { register, handleSubmit, reset } = useForm({
         defaultValues: {
             from: "",
@@ -14,19 +13,23 @@ export default function AllReservations() {
         },
     });
 
+    const [currentFilters, setCurrentFilters] = useState({});
+    const [page, setPage] = useState(0);
+    const pageSize = 10;
+
     const fetchReservations = useQuery({
-        queryKey: ["reservations", currentFilters],
-        queryFn: () => getReservations(currentFilters),
+        queryKey: ["reservations", currentFilters, page],
+        queryFn: () => getReservations({ ...currentFilters, page, pageSize }),
         onError: (error) => {
             console.error("Error fetching reservations:", error);
         },
     });
 
     const updateStatusMutation = useMutation({
-        mutationFn: ({ reservationId, status }) => updateReservationStatus(reservationId, status),
+        mutationFn: ({ reservationId, status }) =>
+            updateReservationStatus(reservationId, status),
         onSuccess: () => {
-            queryClient.invalidateQueries(["reservations"]); // Invalidate and refetch reservations after update
-            // fetchReservations.mutate(currentFilters); // Re-fetch with current filters
+            queryClient.invalidateQueries(["reservations"]);
         },
         onError: (error) => {
             console.error("Error updating reservation status:", error);
@@ -39,8 +42,8 @@ export default function AllReservations() {
             to: data.to,
             status: data.status,
         };
-        // fetchReservations.mutate(filters);
-        setCurrentFilters(filters); // Store current filters for re-fetching
+        setCurrentFilters(filters);
+        setPage(0);
     };
 
     const handleMakeActive = (reservationId) => {
@@ -63,24 +66,39 @@ export default function AllReservations() {
         updateStatusMutation.mutate({ reservationId, status: "NO_SHOW" });
     };
 
-    // const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
-    // if (!hasFetchedOnce) {
-    //     fetchReservations.mutate({});
-    //     setHasFetchedOnce(true);
-    // }
-
     const showActionsColumn = fetchReservations.data?.content.some(
-        (res) => res.status === 'PENDING' || res.status === 'PAID' || res.status === 'CONFIRMED' || res.status === 'NO_SHOW'
+        (res) =>
+            res.status === "PENDING" ||
+            res.status === "PAID" ||
+            res.status === "CONFIRMED" ||
+            res.status === "NO_SHOW"
     );
 
+    const handleDownloadReport = async () => {
+        try {
+            const report = await downloadReservationsReport();
+            const blob = new Blob([report], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+        }catch (error) {
+            console.error("Error downloading report:", error);
+        }
+    }
+
     return (
-        <div className="w-full p-8">
+        <div className="w-full p-4">
             <h1 className="text-2xl font-bold mb-6">All Reservations</h1>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded-lg shadow-md mb-8">
+            <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="bg-white p-6 rounded-lg shadow-md mb-8"
+            >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label htmlFor="from" className="block text-sm font-medium text-gray-700">
+                        <label
+                            htmlFor="from"
+                            className="block text-sm font-medium text-gray-700"
+                        >
                             Available From:
                         </label>
                         <input
@@ -91,7 +109,10 @@ export default function AllReservations() {
                         />
                     </div>
                     <div>
-                        <label htmlFor="to" className="block text-sm font-medium text-gray-700">
+                        <label
+                            htmlFor="to"
+                            className="block text-sm font-medium text-gray-700"
+                        >
                             Available To:
                         </label>
                         <input
@@ -102,7 +123,10 @@ export default function AllReservations() {
                         />
                     </div>
                     <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                        <label
+                            htmlFor="status"
+                            className="block text-sm font-medium text-gray-700"
+                        >
                             Status:
                         </label>
                         <select
@@ -124,7 +148,11 @@ export default function AllReservations() {
                 <div className="mt-6 flex justify-end space-x-4">
                     <button
                         type="button"
-                        onClick={() => reset()}
+                        onClick={() => {
+                            reset();
+                            setCurrentFilters({});
+                            setPage(0);
+                        }}
                         className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         Reset
@@ -138,137 +166,193 @@ export default function AllReservations() {
                 </div>
             </form>
 
+            <button className='bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600 mr-2 mb-4'
+                onClick={handleDownloadReport}
+            >
+                Download Report
+            </button>
+
             {fetchReservations.isLoading ? (
-                <div className="text-center text-gray-500">Loading reservations...</div>
+                <div className="text-center text-gray-500">Loading reservations…</div>
             ) : fetchReservations.isError ? (
-                <div className="text-center text-red-500">Error: {fetchReservations.error.message}</div>
+                <div className="text-center text-red-500">
+                    Error: {String(fetchReservations.error)}
+                </div>
             ) : (
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
                     {fetchReservations.data && fetchReservations.data.content.length > 0 ? (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ID
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Car License
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Client Username
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Start Date
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        End Date
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Amount
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    {showActionsColumn && (
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Actions
-                                        </th>
-                                    )}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {fetchReservations.data.content.map((reservation) => (
-                                    <tr key={reservation.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {reservation.id}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {reservation.carLicense}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {reservation.clientUsername}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {reservation.startDate}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {reservation.endDate}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            ${reservation.totalAmount.toFixed(2)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${reservation.status === 'ACTIVE' || reservation.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
-                                                reservation.status === 'PENDING' || reservation.status === 'PAID' ? 'bg-yellow-100 text-yellow-800' :
-                                                    'bg-red-100 text-red-800'
-                                                }`}>
-                                                {reservation.status}
-                                            </span>
-                                        </td>
+                        <>
+                            <table className="min-w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-100">
+                                        <th className="px-4 py-2 border">ID</th>
+                                        <th className="px-4 py-2 border">Car License</th>
+                                        <th className="px-4 py-2 border">Client Username</th>
+                                        <th className="px-4 py-2 border">Start Date</th>
+                                        <th className="px-4 py-2 border">End Date</th>
+                                        <th className="px-4 py-2 border">Total Amount</th>
+                                        <th className="px-4 py-2 border">Status</th>
                                         {showActionsColumn && (
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                {reservation.status === 'PENDING' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleConfirm(reservation.id)}
-                                                            className="text-blue-600 hover:text-blue-900 mr-4"
-                                                        >
-                                                            Confirm
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleCancel(reservation.id)}
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {reservation.status === 'CONFIRMED' && (
-                                                    <div className="flex gap-2.5">
-                                                        <button
-                                                            onClick={() => handleMakeActive(reservation.id)}
-                                                            className="text-green-600 hover:text-green-900 cursor-pointer">
-                                                            Make Active
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleCancel(reservation.id)}
-                                                            className="text-red-600 hover:text-red-900 cursor-pointer"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                {reservation.status === 'PAID' && (
-                                                    <div className="flex gap-2.5">
-                                                        <button
-                                                            onClick={() => handleMakeActive(reservation.id)}
-                                                            className="text-green-600 hover:text-green-900 cursor-pointer">
-                                                            Make Active
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleNoShow(reservation.id)}
-                                                            className="text-orange-600 hover:text-orange-900 cursor-pointer"
-                                                        >
-                                                            No Show
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                {reservation.status === 'ACTIVE' && (
-                                                    <button
-                                                        onClick={() => handleComplete(reservation.id)}
-                                                        className="text-blue-600 hover:text-blue-900 cursor-pointer"
-                                                    >
-                                                        Complete
-                                                    </button>
-                                                )}
-                                            </td>
+                                            <th className="px-4 py-2 border">Actions</th>
                                         )}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {fetchReservations.data.content.map((reservation) => (
+                                        <tr key={reservation.id} className="hover:bg-gray-50">
+                                            <td className="px-4 py-2 border">{reservation.id}</td>
+                                            <td className="px-4 py-2 border">
+                                                {reservation.carLicense}
+                                            </td>
+                                            <td className="px-4 py-2 border">
+                                                {reservation.clientUsername}
+                                            </td>
+                                            <td className="px-4 py-2 border">
+                                                {reservation.startDate}
+                                            </td>
+                                            <td className="px-4 py-2 border">
+                                                {reservation.endDate}
+                                            </td>
+                                            <td className="px-4 py-2 border">
+                                                ${reservation.totalAmount.toFixed(2)}
+                                            </td>
+                                            <td className="px-4 py-2 border">
+                                                <span
+                                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${reservation.status === "ACTIVE" ||
+                                                        reservation.status === "CONFIRMED"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : reservation.status === "PENDING" ||
+                                                            reservation.status === "PAID"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-red-100 text-red-800"
+                                                        }`}
+                                                >
+                                                    {reservation.status}
+                                                </span>
+                                            </td>
+                                            {showActionsColumn && (
+                                                <td className="px-4 py-2 border">
+                                                    {reservation.status === "PENDING" && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleConfirm(reservation.id)}
+                                                                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm mr-2"
+                                                            >
+                                                                Confirm
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleCancel(reservation.id)}
+                                                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {reservation.status === "CONFIRMED" && (
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleMakeActive(reservation.id)}
+                                                                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
+                                                            >
+                                                                Make Active
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleCancel(reservation.id)}
+                                                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {reservation.status === "PAID" && (
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleMakeActive(reservation.id)}
+                                                                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
+                                                            >
+                                                                Make Active
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleNoShow(reservation.id)}
+                                                                className="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm"
+                                                            >
+                                                                No Show
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {reservation.status === "ACTIVE" && (
+                                                        <button
+                                                            onClick={() => handleComplete(reservation.id)}
+                                                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+                                                        >
+                                                            Complete
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                    {fetchReservations.data.content.length === 0 && (
+                                        <tr>
+                                            <td
+                                                colSpan={showActionsColumn ? 8 : 7}
+                                                className="px-4 py-6 text-center text-gray-500"
+                                            >
+                                                No reservations found.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+
+                            <div className="flex items-center justify-between mt-4">
+                                <button
+                                    onClick={() => setPage((old) => Math.max(old - 1, 0))}
+                                    disabled={page === 0}
+                                    className={`px-3 py-1 rounded ${page === 0
+                                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                        }`}
+                                >
+                                    Previous
+                                </button>
+
+                                <span className="text-sm">
+                                    Page{" "}
+                                    <strong>
+                                        {fetchReservations.data.page.number + 1} of{" "}
+                                        {fetchReservations.data.page.totalPages}
+                                    </strong>{" "}
+                                    — Total: {fetchReservations.data.page.totalElements} entries
+                                </span>
+
+                                <button
+                                    onClick={() =>
+                                        setPage((old) =>
+                                            fetchReservations.data &&
+                                                old + 1 < fetchReservations.data.page.totalPages
+                                                ? old + 1
+                                                : old
+                                        )
+                                    }
+                                    disabled={
+                                        !fetchReservations.data ||
+                                        page + 1 >= fetchReservations.data.page.totalPages
+                                    }
+                                    className={`px-3 py-1 rounded ${!fetchReservations.data ||
+                                        page + 1 >= fetchReservations.data.page.totalPages
+                                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                        }`}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </>
                     ) : (
-                        <div className="text-center text-gray-500 py-8">No reservations found.</div>
+                        <div className="text-center text-gray-500 py-8">
+                            No reservations found.
+                        </div>
                     )}
                 </div>
             )}

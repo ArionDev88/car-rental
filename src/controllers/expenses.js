@@ -61,6 +61,9 @@ export async function getExpenses(filters = {}) {
     if (filters.carIds) {
         params.append('carIds', filters.carIds);
     }
+    if (filters.page) {
+        params.append('page', filters.page);
+    }
 
     const url = `http://localhost:8080/api/private/expenses?${params.toString()}`;
     const response = await fetch(url, {

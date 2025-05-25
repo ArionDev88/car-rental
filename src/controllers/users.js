@@ -36,3 +36,41 @@ export async function updateProfile({firstName, lastName, username, email, passw
 
     return await response.json();
 }
+
+export async function getClients(filters = {}) {
+    const params = new URLSearchParams();
+
+    if (filters.page) {
+        params.append('page', filters.page);
+    }
+
+    const url = `http://localhost:8080/api/private/clients?${params.toString()}`;
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${useAuthStore.getState().token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch clients');
+    }
+
+    return await response.json();
+    
+}
+
+export async function getManagers(){
+    const response = await fetch('http://localhost:8080/api/private/managers', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${useAuthStore.getState().token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch managers');
+    }
+
+    return await response.json();
+}

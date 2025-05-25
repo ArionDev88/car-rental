@@ -27,6 +27,9 @@ export async function getRevenues(filters = {}) {
     if (filters.carIds) {
         params.append('carIds', filters.carIds);
     }
+    if (filters.page){
+        params.append('page', filters.page);
+    }
 
     const url = `http://localhost:8080/api/private/revenues?${params.toString()}`;
     const response = await fetch(url, {

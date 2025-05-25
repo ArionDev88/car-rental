@@ -79,7 +79,7 @@ export default function Revenues() {
     }
 
     return (
-        <div className="p-4 space-y-6">
+        <div className="p-4 space-y-6 w-full">
             {/* ————— Filter Form ————— */}
             <div className="border border-gray-300 rounded-lg p-4"> {/* Added border here */}
                 <h2 className="text-lg font-semibold mb-4">Filter Revenues</h2>

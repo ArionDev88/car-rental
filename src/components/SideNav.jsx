@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 const managerItems = [
     { name: "Reservations", icon: <FaList />, path: "all-reservations" },
-    { name: "Manage Users", icon: <FaUsers />, path: "/manage-users" },
+    { name: "Manage Admins", icon: <FaUsers />, path: "admins" },
+    { name: "Manage Clients", icon: <FaUsers />, path: "clients" },
     { name: "Create Vehicle", icon: <FaCar />, path: "create-car" },
     { name: "Branches", icon: <FaLocationArrow />, path: "branches" },
     { name: "Revenues", icon: <FaList />, path: "revenues" },

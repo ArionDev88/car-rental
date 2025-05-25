@@ -19,6 +19,8 @@ import FutureReservations from './pages/FutureReservations.jsx'
 import ActiveReservation from './pages/ActiveReservation.jsx'
 import Revenues from './pages/Revenues.jsx'
 import Expenses from './pages/Expenses.jsx'
+import Clients from './pages/Clients.jsx'
+import Managers from './pages/Managers.jsx'
 
 const router = createBrowserRouter([
   {
@@ -86,6 +88,14 @@ const router = createBrowserRouter([
           {
             path: 'expenses',
             element: <Expenses />,
+          },
+          {
+            path: 'clients',
+            element: <Clients />,
+          },
+          {
+            path: 'admins',
+            element: <Managers />,
           }
         ]
       },
