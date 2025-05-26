@@ -4,7 +4,10 @@ import { featureCategories } from "../utils/features";
 import { categories } from "../utils/categories";
 import { useState } from "react";
 import { updateCar } from "../controllers/cars";
-import { getCar } from "../controllers/cars";
+import { getCar, deleteCarImage } from "../controllers/cars";
+import { getBranches } from "../controllers/branches";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ToastContainer, toast } from "react-toastify";
 
 
 async function loader(params) {
@@ -13,6 +16,7 @@ async function loader(params) {
     return car;
 }
 export default function CarInfo() {
+    const queryClient = useQueryClient();
     const { register, handleSubmit, formState: { errors }, setValue } = useForm();
     const car = useLoaderData();
     const [features, setFeatures] = useState(car.features);
@@ -34,6 +38,29 @@ export default function CarInfo() {
         );
     };
 
+    const { data: branches, isLoading: branchesLoading } = useQuery({
+        queryKey: ['branches'],
+        queryFn: getBranches,
+    });
+
+    const deleteImageMutation = useMutation({
+        mutationFn: async ({ id, imageUrl }) => {
+            await deleteCarImage(id, imageUrl);
+            queryClient.invalidateQueries(['car', id]);
+        },
+        onSuccess: () => {
+            toast.success("Image deleted successfully");
+            // Consider optimistic updates for instant UI feedback
+            queryClient.setQueryData(['car', car.id], old => ({
+                ...old,
+                imageUrls: old.imageUrls.filter(url => url !== imageUrl)
+            }));
+        },
+        onError: (error) => {
+            toast.error(`Error deleting image: ${error.message}`);
+        }
+    });
+
     const handleCarUpdate = async (data) => {
         try {
             const updatedData = {
@@ -47,6 +74,13 @@ export default function CarInfo() {
             return;
         }
         // console.log({ ...data, features });
+    };
+
+    const handleDeleteImage = (url) => {
+        deleteImageMutation.mutate({
+            id: car.id,
+            imageUrl: url
+        });
     };
 
     return (
@@ -134,7 +168,18 @@ export default function CarInfo() {
                     {...register('branchId')}
                     className="w-full border rounded px-3 py-2"
                 >
-                    <option value={car.branch.id}>{car.branch.name}</option>
+                    {branchesLoading ? (
+                        <option>Loading branches...</option>
+                    ) : (
+                        branches.content.map(branch => (
+                            <option
+                                key={branch.id}
+                                value={branch.id}
+                            >
+                                {branch.name}
+                            </option>
+                        ))
+                    )}
                 </select>
             </div>
 
@@ -197,12 +242,23 @@ export default function CarInfo() {
                 <label className="block font-medium">Current Images</label>
                 <div className="grid grid-cols-3 gap-4 mt-2">
                     {car.imageUrls.map((url, index) => (
-                        <img
-                            key={index}
-                            src={url}
-                            alt={`Car ${index + 1}`}
-                            className="w-full h-32 object-cover rounded"
-                        />
+                        <div key={index} className="relative group">
+                            <img
+                                src={url}
+                                alt={`Car ${index + 1}`}
+                                className="w-full h-32 object-cover rounded"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteImage(url)}
+                                className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full 
+                               flex items-center justify-center opacity-75 hover:opacity-100 
+                               transition-opacity"
+                                aria-label="Delete image"
+                            >
+                                ×
+                            </button>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -224,6 +280,8 @@ export default function CarInfo() {
             >
                 Update Car
             </button>
+
+            <ToastContainer />
         </form>
     );
 }

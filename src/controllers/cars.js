@@ -114,7 +114,7 @@ export async function getCar(id) {
     return await response.json();
 }
 
-export async function updateCar(carId,{ modelId, brandId, pricePerDay, licensePlate, year, images, mileage, branchId, category, features }) {
+export async function updateCar(carId, { modelId, brandId, pricePerDay, licensePlate, year, images, mileage, branchId, category, features }) {
     const formData = new FormData();
 
     const carData = {
@@ -156,7 +156,7 @@ export async function updateCar(carId,{ modelId, brandId, pricePerDay, licensePl
     return await response.json();
 }
 
-export async function deleteCar(carId){
+export async function deleteCar(carId) {
     const response = await fetch(`http://localhost:8080/api/private/car/delete-car/${carId}`, {
         method: 'DELETE',
         headers: {
@@ -166,6 +166,26 @@ export async function deleteCar(carId){
 
     if (!response.ok) {
         throw new Error('Failed to delete car');
+    }
+
+    return await response.json();
+}
+
+export async function deleteCarImage(id, imageUrl) {
+    const response = await fetch(
+        `http://localhost:8080/api/private/car/update-car/${id}/delete-image`,
+        {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${useAuthStore.getState().token}`,
+            },
+            body: JSON.stringify({ imageUrl: imageUrl })
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(response.message || 'Failed to delete car image');
     }
 
     return await response.json();
@@ -232,7 +252,7 @@ export async function getAllModelsByBrandIds(brandIds) {
     }
 
     return await response.json();
-}    
+}
 
 
 export async function getAllCars(filters = {}) {
