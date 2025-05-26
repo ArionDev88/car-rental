@@ -12,9 +12,6 @@ export default function CarsManagement() {
         queryFn: getAllCars,
     });
 
-    if (isLoading) return <div>Loading...</div>;
-    if (error) return <div>Error loading cars: {error.message}</div>;
-
     const queryClient = useQueryClient();
     const deleteCarMutation = useMutation({
         mutationFn: deleteCar,
@@ -26,6 +23,9 @@ export default function CarsManagement() {
         }
     });
 
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error loading cars: {error.message}</div>;
+    
     const handleDeleteCar = (carId) => {
         deleteCarMutation.mutate(carId);
     }
