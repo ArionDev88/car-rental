@@ -271,7 +271,7 @@ export default function MyReservations() {
                                                     carId,
                                                     startDate: newDates.start,
                                                     endDate: newDates.end,
-                                                    paymentOption: payNowChecked ? "PAY_NOW" : null,
+                                                    paymentOption: payNowChecked ? "PAY_NOW" : 'PAY_AT_PICKUP',
                                                 })
                                             }
                                             disabled={editMutation.isLoading}

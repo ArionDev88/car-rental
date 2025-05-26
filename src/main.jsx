@@ -22,6 +22,8 @@ import Expenses from './pages/Expenses.jsx'
 import Clients from './pages/Clients.jsx'
 import Managers from './pages/Managers.jsx'
 import Promotions from './pages/Promotions.jsx'
+import CarsManagement from './pages/CarsManagement.jsx'
+import CarInfo from './pages/CarInfo.jsx'
 
 const router = createBrowserRouter([
   {
@@ -42,7 +44,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Dashboard />, 
+            element: <Dashboard />,
             loader: Dashboard.loader
           },
           {
@@ -101,6 +103,15 @@ const router = createBrowserRouter([
           {
             path: 'promotions',
             element: <Promotions />,
+          },
+          {
+            path: 'cars',
+            element: <CarsManagement />,
+          },
+          {
+            path: 'cars/car/:id',
+            element: <CarInfo />,
+            loader: CarInfo.loader
           }
         ]
       },

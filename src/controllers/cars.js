@@ -98,6 +98,79 @@ export async function createCar({ modelId, brandId, pricePerDay, licensePlate, y
     return await response.json();
 }
 
+export async function getCar(id) {
+    const response = await fetch(`http://localhost:8080/api/public/car/${id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${useAuthStore.getState().token}`,
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch car details');
+    }
+
+    return await response.json();
+}
+
+export async function updateCar(carId,{ modelId, brandId, pricePerDay, licensePlate, year, images, mileage, branchId, category, features }) {
+    const formData = new FormData();
+
+    const carData = {
+        modelId,
+        brandId,
+        pricePerDay: Number(pricePerDay),
+        licensePlate,
+        year: Number(year),
+        mileage: Number(mileage),
+        branchId,
+        category,
+        features,
+    };
+    const dto = new File(
+        [JSON.stringify(carData)],
+        "dto.json",
+        { type: "application/json" }
+    );
+    formData.append("dto", dto);
+
+    if (images && images.length > 0) {
+        for (let i = 0; i < images.length; i++) {
+            formData.append('images', images[i]);
+        }
+    }
+
+    const response = await fetch(`http://localhost:8080/api/private/car/update-car/${carId}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${useAuthStore.getState().token}`,
+        },
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update car');
+    }
+
+    return await response.json();
+}
+
+export async function deleteCar(carId){
+    const response = await fetch(`http://localhost:8080/api/private/car/delete-car/${carId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${useAuthStore.getState().token}`,
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to delete car');
+    }
+
+    return await response.json();
+}
+
 export async function getAllBrands() {
     const response = await fetch('http://localhost:8080/api/private/car-brand/brands', {
         method: 'GET',
