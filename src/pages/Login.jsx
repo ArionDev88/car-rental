@@ -57,9 +57,7 @@ export default function Login() {
                                     placeholder="Email"
                                     className="flex-1 border-none outline-none"
                                     required
-                                    {
-                                    ...register('email', { required: 'Email is required' })
-                                    }
+                                    {...register('email', { required: 'Email is required' })}
                                 />
                             </label>
                         </div>
@@ -72,11 +70,15 @@ export default function Login() {
                                     placeholder="Password"
                                     className="flex-1 border-none outline-none"
                                     required
-                                    {
-                                    ...register('password', { required: 'Password is required' })
-                                    }
+                                    {...register('password', { required: 'Password is required' })}
                                 />
                             </label>
+                        </div>
+
+                        <div className="mt-2 text-right">
+                            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                                Forgot Password?
+                            </Link>
                         </div>
 
                         <button

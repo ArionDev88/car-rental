@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { getBranches, createBranch } from "../controllers/branches";
+import { getBranches, createBranch, updateBranch, deleteBranch, getBranchById } from "../controllers/branches";
 import { Modal } from "../components/Modal";
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function Branches() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentBranchId, setCurrentBranchId] = useState(null);
     const queryClient = useQueryClient();
     const { register, handleSubmit, reset } = useForm();
 
@@ -21,27 +23,75 @@ export default function Branches() {
             setIsModalOpen(false);
             reset();
         },
+        onError: (error) => {
+            toast.error(`Error creating branch: ${error.message}`);
+        },
+    });
+
+    const editBranchMutation = useMutation({
+        mutationFn: updateBranch,
+        onSuccess: () => {
+            queryClient.invalidateQueries(["branches"]);
+            setIsModalOpen(false);
+            setCurrentBranchId(null);
+            reset();
+        },
+        onError: (error) => {
+            toast.error(`Error updating branch: ${error.message}`);
+        }
+    });
+
+    const deleteBranchMutation = useMutation({
+        mutationFn: deleteBranch,
+        onSuccess: () => {
+            queryClient.invalidateQueries(["branches"]);
+            toast.success("Branch deleted successfully");
+        },
+        onError: (error) => {
+            console.error("Error deleting branch:", error);
+            toast.error(`Error deleting branch: ${error.message}`);
+        },
     });
 
     const onSubmit = (data) => {
-        createBranchMutation.mutate(data);
+        if (currentBranchId) {
+            // Pass a single object containing both id and data
+            editBranchMutation.mutate({
+                id: currentBranchId,
+                ...data
+            });
+        } else {
+            createBranchMutation.mutate(data);
+        }
     };
 
-    // Placeholder handlers for edit/delete actions
-    const handleEdit = (branchId) => {
-        // TODO: open an edit modal or navigate to edit form
-        console.log("Edit branch", branchId);
+    const handleEdit = async (branchId) => {
+        try {
+            const response = await getBranchById(branchId);
+            const branchData = response.data ? response.data : response;
+
+            reset({
+                name: branchData.name,
+                address: branchData.address,
+                city: branchData.city,
+                phone: branchData.phone || '' 
+            });
+
+            setCurrentBranchId(branchId);
+            setIsModalOpen(true);
+        } catch (error) {
+            toast.error(`Error fetching branch: ${error.message}`);
+        }
     };
 
     const handleDelete = (branchId) => {
-        // TODO: call delete API and invalidate the query
-        console.log("Delete branch", branchId);
+        deleteBranchMutation.mutate(branchId);
     };
 
     if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error loading branches</div>;
 
-     return (
+    return (
         <div className="p-6 m-auto">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold">Branches</h1>
@@ -172,20 +222,21 @@ export default function Branches() {
                             <button
                                 type="submit"
                                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                                disabled={createBranchMutation.isLoading}
+                                disabled={
+                                    currentBranchId
+                                        ? editBranchMutation.isLoading
+                                        : createBranchMutation.isLoading
+                                }
                             >
-                                {createBranchMutation.isLoading ? "Saving…" : "Create"}
+                                {currentBranchId
+                                    ? (editBranchMutation.isLoading ? "Saving..." : "Update")
+                                    : (createBranchMutation.isLoading ? "Saving..." : "Create")}
                             </button>
                         </div>
-
-                        {createBranchMutation.isError && (
-                            <p className="text-red-600 text-sm">
-                                {createBranchMutation.error.message}
-                            </p>
-                        )}
                     </form>
                 </Modal>
             )}
+            <ToastContainer />
         </div>
     );
 }

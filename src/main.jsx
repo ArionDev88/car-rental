@@ -24,6 +24,8 @@ import Managers from './pages/Managers.jsx'
 import Promotions from './pages/Promotions.jsx'
 import CarsManagement from './pages/CarsManagement.jsx'
 import CarInfo from './pages/CarInfo.jsx'
+import ForgotPassword from './pages/ForgotPassword.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
 
 const router = createBrowserRouter([
   {
@@ -115,6 +117,14 @@ const router = createBrowserRouter([
           }
         ]
       },
+      {
+        path: '/forgot-password',
+        element: <ForgotPassword />
+      },
+      {
+        path: '/reset-password',
+        element: <ResetPassword />
+      }
     ]
   }
 ])
