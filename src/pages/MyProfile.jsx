@@ -2,6 +2,7 @@ import { getProfile, updateProfile } from "../controllers/users";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function MyProfile() {
     const {
@@ -43,8 +44,10 @@ export default function MyProfile() {
             });
             
             navigate("/homepage");
+            toast.success("Profile updated successfully!");
         }catch (error) {
             console.error("Error updating profile:", error);
+            toast.error(error.message || "Failed to update profile. Please try again.");
         }
     };
 
@@ -157,6 +160,8 @@ export default function MyProfile() {
             >
                 Save Changes
             </button>
+
+            <ToastContainer />
         </form>
     );
 }

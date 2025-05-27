@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { Modal } from '../components/Modal';
 import { getCars } from '../controllers/revenues';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function Expenses() {
     const queryClient = useQueryClient();
@@ -44,6 +45,7 @@ export default function Expenses() {
 
         onError: (error) => {
             console.error('Error fetching expenses:', error);
+            toast.error(error.message || 'Failed to fetch expenses');
         }
     });
 
@@ -81,9 +83,11 @@ export default function Expenses() {
             queryClient.invalidateQueries(['expenses']);
             setIsAddExpenseModalOpen(false);
             resetModalForm();
+            toast.success("Expense added successfully!");
         },
         onError: (err) => {
             console.error("Failed to add expense:", err);
+            toast.error(err.message || "Failed to add expense. Please try again.");
         }
     });
 
@@ -101,9 +105,11 @@ export default function Expenses() {
             setIsEditExpenseModalOpen(false);
             resetEditModalForm();
             setSelectedExpenseId(null);
+            toast.success("Expense updated successfully!");
         },
         onError: (err) => {
             console.error("Failed to update expense:", err);
+            toast.error(err.message || "Failed to update expense. Please try again.");
         }
     });
 
@@ -113,9 +119,11 @@ export default function Expenses() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['expenses']);
+            toast.success("Expense deleted successfully!");
         },
         onError: (err) => {
             console.error("Failed to delete expense:", err);
+            toast.error(err.message || "Failed to delete expense. Please try again.");
         }
     });
 
@@ -579,6 +587,8 @@ export default function Expenses() {
                     )}
                 </Modal>
             )}
+
+            <ToastContainer />
         </div>
     );
 }

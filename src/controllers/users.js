@@ -31,7 +31,9 @@ export async function updateProfile({ firstName, lastName, username, email, pass
     });
 
     if (!response.ok) {
-        throw new Error('Failed to update profile');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to update profile');
+        });
     }
 
     return await response.json();
@@ -99,7 +101,9 @@ export async function addManager({ firstName, lastName, username, email, passwor
     });
 
     if (!response.ok) {
-        throw new Error('Failed to add manager');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to add manager');
+        });
     }
 
     return await response.json();
@@ -114,7 +118,9 @@ export async function deleteManager(managerId) {
     });
     
     if (!response.ok) {
-        throw new Error('Failed to delete manager');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to delete manager');
+        });
     }
 
     return await response.json();

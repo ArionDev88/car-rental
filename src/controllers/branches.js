@@ -54,7 +54,9 @@ export async function deleteBranch(id) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to delete branch');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to delete branch');
+        });
     }
 
     return await response.json();

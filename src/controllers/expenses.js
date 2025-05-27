@@ -11,7 +11,9 @@ export async function addExpense({ carId, description, amount, date }) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to add expense');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to add expense');
+        });
     }
 
     return await response.json();
@@ -28,7 +30,9 @@ export async function updateExpense(expenseId, { carId, description, amount, dat
     });
 
     if (!response.ok) {
-        throw new Error('Failed to update expense');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to update expense');
+        });
     }
 
     return await response.json();
@@ -43,7 +47,9 @@ export async function deleteExpense(expenseId) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to delete expense');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to delete expense');
+        });
     }
 
     return await response.json();
@@ -74,7 +80,9 @@ export async function getExpenses(filters = {}) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to fetch expenses');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to fetch expenses');
+        });
     }
 
     return await response.json();
@@ -90,7 +98,9 @@ export async function getExpenseById(expenseId) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to fetch expense');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to fetch expense');
+        });
     }
 
     return await response.json();
@@ -118,7 +128,9 @@ export async function downloadReport(filters = {}) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to download report');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to download report');
+        });
     }
 
     return await response.blob();

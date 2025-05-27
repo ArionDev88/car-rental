@@ -6,6 +6,7 @@ import { featureCategories } from "../utils/features";
 import { categories } from "../utils/categories";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal } from "../components/Modal";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function CarCreation() {
     const queryClient = useQueryClient();
@@ -61,9 +62,11 @@ export default function CarCreation() {
             setBrandModalOpen(false);
             setBrandName("");
             setBrandLogo(null);
+            toast.success("Brand created successfully!");
         },
         onError: (error) => {
             console.error("Error creating brand:", error);
+            toast.error(error.message || "Failed to create brand. Please try again.");
         },
     });
 
@@ -74,9 +77,11 @@ export default function CarCreation() {
             setModelModalOpen(false);
             setSelectedBrandId("");
             setModelName("");
+            toast.success("Model created successfully!");
         },
         onError: (error) => {
             console.error("Error creating model:", error);
+            toast.error(error.message || "Failed to create model. Please try again.");
         },
     })
 
@@ -399,6 +404,8 @@ export default function CarCreation() {
                     </form>
                 </Modal>
             )}
+
+            <ToastContainer />
         </>
     );
 }

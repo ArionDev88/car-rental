@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { forgotPassword } from "../controllers/authController";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 export default function ForgotPassword() {
     const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -8,8 +9,10 @@ export default function ForgotPassword() {
         try {
             await forgotPassword(data);
             navigate('/reset-password')
+            toast.success("Reset password link sent to your email!");
         } catch (error) {
             console.error("Error sending reset password link:", error);
+            toast.error(error.message || "Failed to send reset password link. Please try again.");
         }
     };
 
@@ -36,6 +39,8 @@ export default function ForgotPassword() {
                     </button>
                 </form>
             </div>
+
+            <ToastContainer />
         </div>
     )
 }

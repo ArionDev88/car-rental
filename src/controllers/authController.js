@@ -14,7 +14,9 @@ export async function signUp({ firstName, lastName, username, email, password })
     });
 
     if (!response.ok) {
-        throw new Error('Failed to sign up');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Sign up failed');
+        });
     }
 
     return await response.json();
@@ -33,7 +35,9 @@ export async function login({ email, password }) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to log in');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Login failed');
+        });
     }
 
     return await response.json();
@@ -49,7 +53,9 @@ export async function forgotPassword({ email }) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to send reset password link');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Forgot password request failed');
+        });
     }
 
     return await response.json();
@@ -65,7 +71,9 @@ export async function resetPassword({ token, newPassword }) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to reset password');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Reset password failed');
+        });
     }
 
     return await response.json();

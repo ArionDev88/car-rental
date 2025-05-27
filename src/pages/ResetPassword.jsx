@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { resetPassword } from "../controllers/authController";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function ResetPassword() {
     const navigate = useNavigate();
@@ -17,8 +18,10 @@ export default function ResetPassword() {
                 newPassword: data.newPassword
             });
             navigate('/');
+            toast.success("Password reset successfully!");
         } catch (error) {
             console.error("Error resetting password:", error);
+            toast.error(error.message || "Failed to reset password. Please try again.");
         }
     };
 
@@ -89,6 +92,8 @@ export default function ResetPassword() {
                     </button>
                 </form>
             </div>
+
+            <ToastContainer />
         </div>
     )
 }

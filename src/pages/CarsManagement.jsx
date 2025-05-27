@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { deleteCar } from "../controllers/cars";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function CarsManagement() {
     const navigate = useNavigate();
@@ -17,9 +18,11 @@ export default function CarsManagement() {
         mutationFn: deleteCar,
         onSuccess: () => {
             queryClient.invalidateQueries(['cars', page]);
+            toast.success("Car deleted successfully!");
         },
         onError: (error) => {
             console.error("Error deleting car:", error);
+            toast.error(error.message || "Failed to delete car. Please try again.");
         }
     });
 
@@ -120,7 +123,8 @@ export default function CarsManagement() {
                     Next
                 </button>
             </div>
-
+            
+            <ToastContainer />
         </div>
     );
 }

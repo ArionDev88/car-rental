@@ -29,7 +29,9 @@ export async function createBrand({ name, logo }) {
     );
 
     if (!response.ok) {
-        throw new Error("Failed to create brand");
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to create brand');
+        });
     }
 
     return await response.json();
@@ -49,7 +51,9 @@ export async function createModel({ name, brandId }) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to create model');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to create model');
+        });
     }
 
     return await response.json();
@@ -92,7 +96,9 @@ export async function createCar({ modelId, brandId, pricePerDay, licensePlate, y
     });
 
     if (!response.ok) {
-        throw new Error('Failed to create car');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to create car');
+        });
     }
 
     return await response.json();
@@ -150,7 +156,9 @@ export async function updateCar(carId, { modelId, brandId, pricePerDay, licenseP
     });
 
     if (!response.ok) {
-        throw new Error('Failed to update car');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to update car');
+        });
     }
 
     return await response.json();
@@ -165,7 +173,9 @@ export async function deleteCar(carId) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to delete car');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to delete car');
+        });
     }
 
     return await response.json();
@@ -185,7 +195,9 @@ export async function deleteCarImage(id, imageUrl) {
     );
 
     if (!response.ok) {
-        throw new Error(response.message || 'Failed to delete car image');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Failed to delete car image');
+        });
     }
 
     return await response.json();

@@ -7,6 +7,7 @@ import { categories } from '../utils/categories';
 import { bookCar } from '../controllers/reservations';
 import { loadStripe } from '@stripe/stripe-js';
 import MoreFiltersModal from '../components/MoreFiltersModal';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function VehicleMarketplace() {
     const queryClient = useQueryClient();
@@ -160,10 +161,10 @@ export default function VehicleMarketplace() {
                 endDate: availToValue,
                 paymentOption: 'PAY_AT_PICKUP',
             });
-            // Handle success (e.g., show a success message)
+            toast.success('Car booked successfully! Please proceed to pick up.');
         } catch (error) {
             console.error('Error booking car:', error);
-            // Handle error (e.g., show an error message)
+            toast.error(error.message || 'Failed to book car. Please try again.');
         }
     }
 
@@ -560,6 +561,8 @@ export default function VehicleMarketplace() {
                 register={register}
                 watch={watch}
             />
+
+            <ToastContainer />
         </div>
 
 

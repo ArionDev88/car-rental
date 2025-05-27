@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '../stores/authStore';
 import { login } from '../controllers/authController';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function Login() {
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -25,8 +26,11 @@ export default function Login() {
             } else {
                 navigate('/homepage');
             }
+
+            toast.success('Login successful!');
         } catch (error) {
             console.error('Error logging in:', error);
+            toast.error(error.message || 'Login failed. Please try again.');
         }
     }
 
@@ -97,6 +101,8 @@ export default function Login() {
                     </p>
                 </div>
             </div>
+
+            <ToastContainer />
         </div>
     );
 }

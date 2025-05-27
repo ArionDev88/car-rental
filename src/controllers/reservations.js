@@ -62,7 +62,9 @@ export async function bookCar({ carId, startDate, endDate, paymentOption }) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to book car');
+        return await response.json().then(data => {
+            throw new Error(data.message || 'Booking failed');
+        });
     }
 
     return await response.json();
